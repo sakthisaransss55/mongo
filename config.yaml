@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: nextcloud@password&&cloud
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysqldata
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysqldata
+        persistentVolumeClaim:
+          claimName: mysql-persistent-volume-claim
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqlservice
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-persistent-volume
+spec:
+  capacity:
+    storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: mysql-storage-class
+  hostPath:
+    path: /home/sakthi/kubestorage/mysql
+
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-persistent-volume-claim
+spec:
+  storageClassName: mysql-storage-class
+  resources:
+    requests:
+      storage: 50Gi
+  volumeMode: Filesystem
+  accessModes:
+  - ReadWriteMany
+
+
