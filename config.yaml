@@ -98,6 +98,6 @@ metadata:
 type: Opaque
 data:
   ME_CONFIG_MONGODB_ADMINUSERNAME: sakthisaran
-  ME_CONFIG_MONGODB_ADMINPASSWORD: sakthi@cloud#mongo**secret
+  ME_CONFIG_MONGODB_ADMINPASSWORD: mongoSecret001BySakthi
 
 
