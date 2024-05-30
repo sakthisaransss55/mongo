@@ -94,7 +94,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: mongo-credentials
+  name: mongocredentials
 type: Opaque
 data:
   ME_CONFIG_MONGODB_ADMINUSERNAME: sakthisaran
