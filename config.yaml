@@ -1,24 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql
+  name: mongo
 spec:
   replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: mysql
+      app: mongo
   template:
     metadata:
       labels:
-        app: mysql
+        app: mongo
     spec:
       containers:
-      - name: mysql
-        image: mysql
+      - name: mongo
+        image: mongo
         env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: nextcloud@password&&cloud
+        - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+          valueFrom:
+            secretKeyRef:
+            - name: mongo-credentials
+              value: ME_CONFIG_MONGODB_ADMINUSERNAME
+
+        - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+          valueFrom:
+            secretKeyRef:
+            - name: mongo-credentials
+              value: ME_CONFIG_MONGODB_ADMINPASSWORD
+
         resources:
           limits:
             memory: "500Mi"
@@ -26,23 +36,23 @@ spec:
         ports:
         - containerPort: 3306
         volumeMounts:
-        - name: mysqldata
+        - name: mongodata
           mountPath: /var/lib/mysql
       volumes:
-      - name: mysqldata
+      - name: mongodata
         persistentVolumeClaim:
-          claimName: mysql-persistent-volume-claim
+          claimName: mongo-persistent-volume-claim
 
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysqlservice
+  name: mongoservice
 spec:
   type: ClusterIP
   selector:
-    app: mysql
+    app: mongo
   ports:
   - port: 3306
     targetPort: 3306
@@ -52,7 +62,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: mysql-persistent-volume
+  name: mongo-persistent-volume
 spec:
   capacity:
     storage: 50Gi
@@ -60,23 +70,34 @@ spec:
   accessModes:
   - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
-  storageClassName: mysql-storage-class
+  storageClassName: mongo-storage-class
   hostPath:
-    path: /home/sakthi/kubestorage/mysql
+    path: /home/sakthi/kubestorage/mongo
 
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-persistent-volume-claim
+  name: mongo-persistent-volume-claim
 spec:
-  storageClassName: mysql-storage-class
+  storageClassName: mongo-storage-class
   resources:
     requests:
       storage: 50Gi
   volumeMode: Filesystem
   accessModes:
   - ReadWriteMany
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-credentials
+type: Opaque
+data:
+  ME_CONFIG_MONGODB_ADMINUSERNAME: sakthisaran
+  ME_CONFIG_MONGODB_ADMINPASSWORD: sakthi@cloud#mongo**secret
 
 
